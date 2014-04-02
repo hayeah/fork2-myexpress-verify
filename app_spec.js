@@ -15,22 +15,17 @@ describe("Implement Empty App",function() {
 
   describe("Defining the app.listen method",function() {
     var port = 7001;
-    var server = app.listen(port);
+    var server;
 
-    // it("should have listen as a prototype method", function() {
-    //   expect(app.__proto__.listen).to.be.a("function");
-    // });
-
-    // it("should not extend the Function prototype", function() {
-    //   expect(Function.listen).to.be.undefined;
-    // });
+    before(function(done) {
+      server = app.listen(port,done);
+    });
 
     it("should return an http.Server",function() {
       expect(server).to.be.instanceof(http.Server);
     });
 
     it("responds to /foo with 404",function(done) {
-
       request("http://localhost:" + port).get("/foo").expect(404).end(done);
     })
   });
