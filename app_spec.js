@@ -44,7 +44,7 @@ describe("Implement app.use",function() {
   it("should be able to add middlewares to stack",function() {
     app.use(m1)
     app.use(m2)
-    expect(app.stack).to.deep.equal([m1,m2]);
+    expect(app.stack.length).to.eql(2);
   });
 });
 
