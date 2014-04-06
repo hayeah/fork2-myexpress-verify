@@ -42,8 +42,8 @@ describe("Implement app.use",function() {
   });
 
   it("should be able to add middlewares to stack",function() {
-    app.use(m1)
-    app.use(m2)
+    app.use(m1);
+    app.use(m2);
     expect(app.stack.length).to.eql(2);
   });
 });
@@ -199,4 +199,109 @@ describe("Implement App Embedding As Middleware",function() {
     request(app).get("/").expect("m1 error").end(done);
   });
 
+});
+
+describe("Layer class and the match method",function() {
+  var layer, fn;
+  beforeEach(function() {
+    var Layer = require("../lib/layer");
+    fn = function() {};
+    layer = new Layer("/foo",fn);
+  });
+
+  it("sets layer.handle to be the middleware",function() {
+    expect(layer.handle).to.eql(fn);
+  });
+
+  it("returns undefined if path doesn't match",function() {
+    expect(layer.match("/bar")).to.be.undefined;
+  });
+
+  it("returns matched path if layer matches the request path exactly",function() {
+    var match = layer.match("/foo");
+    expect(match).to.not.be.undefined;
+    expect(match).to.have.property("path","/foo");
+  });
+
+  it("returns matched prefix if the layer matches the prefix of the request path",function() {
+    var match = layer.match("/foo/bar");
+    expect(match).to.not.be.undefined;
+    expect(match).to.have.property("path","/foo");
+  });
+});
+
+describe("app.use should add a Layer to stack",function() {
+  var app, Layer;
+  beforeEach(function() {
+    app = express();
+    Layer = require("../lib/layer");
+    app.use(function() {});
+    app.use("/foo",function() {});
+  });
+
+  it("first layer's path should be /",function() {
+    layer = app.stack[0];
+    expect(layer.match("/foo")).to.have.property("path","/");
+  });
+
+  it("second layer's path should be /foo",function() {
+    layer = app.stack[1];
+    expect(layer.match("/foo")).to.have.property("path","/foo");
+  });
+});
+
+describe("The middlewares called should match request path:",function() {
+  var app;
+  before(function() {
+    app = express();
+    app.use("/foo",function(req,res,next) {
+      res.end("foo");
+    });
+
+    app.use("/",function(req,res) {
+      res.end("root");
+    });
+  });
+
+  it("returns root for GET /",function(done) {
+    request(app).get("/").expect("root").end(done);
+  });
+
+  it("returns foo for GET /foo",function(done) {
+    request(app).get("/foo").expect("foo").end(done);
+  });
+
+  it("returns foo for GET /foo/bar",function(done) {
+    request(app).get("/foo/bar").expect("foo").end(done);
+  });
+});
+
+describe("The error handlers called should match request path:",function() {
+  var app;
+  before(function() {
+    app = express();
+    app.use("/foo",function(req,res,next) {
+      throw "boom!"
+    });
+
+    app.use("/foo/a",function(err,req,res,next) {
+      res.end("error handled /foo/a");
+    });
+
+    app.use("/foo/b",function(err,req,res,next) {
+      res.end("error handled /foo/b");
+    });
+  });
+
+  it("handles error with /foo/a",function(done) {
+    request(app).get("/foo/a").expect("error handled /foo/a").end(done);
+  });
+
+  it("handles error with /foo/b",function(done) {
+    request(app).get("/foo/b").expect("error handled /foo/b").end(done);
+  });
+
+  it("returns 500 for /foo",function(done) {
+    request(app).get("/foo").expect(500).end(done);
+  });
 });
