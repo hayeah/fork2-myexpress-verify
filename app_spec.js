@@ -241,12 +241,13 @@ describe("app.use should add a Layer to stack",function() {
 
   it("first layer's path should be /",function() {
     layer = app.stack[0];
-    expect(layer.match("/foo")).to.have.property("path","/");
+    expect(layer.match("/foo")).to.not.be.undefined;
   });
 
   it("second layer's path should be /foo",function() {
     layer = app.stack[1];
-    expect(layer.match("/foo")).to.have.property("path","/foo");
+    expect(layer.match("/")).to.be.undefined;
+    expect(layer.match("/foo")).to.not.be.undefined;
   });
 });
 
@@ -339,6 +340,16 @@ describe("Path parameters extraction",function() {
   it("should decode uri encoding",function() {
     var match = layer.match("/foo/apple/xiao%20mi");
     expect(match.params).to.deep.equal({a: "apple", b: "xiao mi"});
+  });
+
+  it("should strip trialing slash",function() {
+    layer = new Layer("/")
+    expect(layer.match("/foo")).to.not.be.undefined;
+    expect(layer.match("/")).to.not.be.undefined;
+
+    layer = new Layer("/foo/")
+    expect(layer.match("/foo")).to.not.be.undefined;
+    expect(layer.match("/foo/")).to.not.be.undefined;
   });
 });
 
