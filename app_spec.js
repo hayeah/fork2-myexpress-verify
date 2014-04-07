@@ -305,3 +305,112 @@ describe("The error handlers called should match request path:",function() {
     request(app).get("/foo").expect(500).end(done);
   });
 });
+
+describe("Path parameters extraction",function() {
+  var Layer, layer;
+
+  before(function() {
+    Layer = require("../lib/layer");
+    layer = new Layer("/foo/:a/:b");
+  });
+
+  it("returns undefined for unmatched path",function() {
+    expect(layer.match("/bar")).to.be.undefined;
+  });
+
+  it("returns undefined if there isn't enough parameters",function() {
+    expect(layer.match("/foo/apple")).to.be.undefined;
+  });
+
+  it("returns match data for exact match",function() {
+    var match = layer.match("/foo/apple/xiaomi");
+    expect(match).to.not.be.undefined;
+    expect(match).to.have.property("path","/foo/apple/xiaomi");
+    expect(match.params).to.deep.equal({a: "apple", b: "xiaomi"});
+  });
+
+  it("returns match data for prefix match",function() {
+    var match = layer.match("/foo/apple/xiaomi/htc");
+    expect(match).to.not.be.undefined;
+    expect(match).to.have.property("path","/foo/apple/xiaomi");
+    expect(match.params).to.deep.equal({a: "apple", b: "xiaomi"});
+  });
+
+  it("should decode uri encoding",function() {
+    var match = layer.match("/foo/apple/xiao%20mi");
+    expect(match.params).to.deep.equal({a: "apple", b: "xiao mi"});
+  });
+});
+
+describe("Implement req.params",function() {
+  var app;
+  before(function() {
+    app = express();
+    app.use("/foo/:a",function(req,res,next) {
+      res.end(req.params.a);
+    });
+
+    app.use("/foo",function(req,res,next) {
+      res.end(""+req.params.a);
+    });
+  });
+
+  it("should make path parameters accessible in req.params",function(done) {
+    request(app).get("/foo/google").expect("google").end(done);
+  })
+
+  it("should make {} the default for req.params",function(done) {
+    request(app).get("/foo").expect("undefined").end(done);
+  });
+})
+
+describe("app should have the handle method",function() {
+  it("should have the handle method",function() {
+    var app = express();
+    expect(app.handle).to.be.a("function");
+  });
+});
+
+describe("Prefix path trimming",function() {
+  var app, subapp, barapp;
+  beforeEach(function() {
+    app = express();
+    subapp = express();
+
+    subapp.use("/bar",function(req,res) {
+      res.end("embedded app: "+req.url);
+    });
+
+    app.use("/foo",subapp);
+
+    app.use("/foo",function(req,res) {
+      res.end("handler: "+req.url);
+    });
+  });
+
+  it("trims request path prefix when calling embedded app",function(done) {
+    request(app).get("/foo/bar").expect("embedded app: /bar").end(done);
+  });
+
+  it("restore trimmed request path to original when going to the next middleware",function(done) {
+    request(app).get("/foo").expect("handler: /foo").end(done);
+  });
+
+  describe("ensures leading slash",function() {
+    beforeEach(function() {
+      barapp = express();
+      barapp.use("/",function(req,res) {
+        res.end("/bar");
+      });
+      app.use("/bar",barapp);
+    });
+
+    it("ensures that first char is / for trimmed path",function(done) {
+      // request(app).get("/bar").expect("/bar").end(done);
+      request(app).get("/bar/").expect("/bar").end(done);
+    });
+  });
+
+
+
+});
