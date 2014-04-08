@@ -421,7 +421,5 @@ describe("Prefix path trimming",function() {
       request(app).get("/bar/").expect("/bar").end(done);
     });
   });
-
-
-
 });
+
