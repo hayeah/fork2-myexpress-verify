@@ -125,7 +125,7 @@ describe("Implement Verbs For Route",function() {
   var app, route, methods;
 
   try {
-    methods = require("methods");
+    methods = require("methods").concat("all");
   } catch(e) {
     methods = [];
   }
@@ -143,6 +143,8 @@ describe("Implement Verbs For Route",function() {
       });
       if(method === "delete")
         method = "del";
+      if(method === "all")
+        method = "get";
       request(app)[method]("/").expect(200).end(done);
     });
   });
@@ -183,7 +185,7 @@ describe("Implement Verbs For App",function(done) {
   var app;
 
   try {
-    methods = require("methods");
+    methods = require("methods").concat("all");
   } catch(e) {
     methods = [];
   }
@@ -199,6 +201,8 @@ describe("Implement Verbs For App",function(done) {
       });
       if(method === "delete")
         method = "del";
+      if(method === "all")
+        method = "get";
       request(app)[method]("/foo").expect(200).end(done);
     });
   });
