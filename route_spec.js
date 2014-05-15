@@ -3,11 +3,12 @@ var request = require("supertest")
   , http = require("http");
 
 var express = require("../");
-var makeRoute = require("../lib/route");
+var makeRoute;
 
 describe("Add handlers to a route:", function() {
   var route, handler1, handler2;
   before(function() {
+    makeRoute = require("../lib/route");
     route = makeRoute();
     handler1 = function() {};
     handler2 = function() {};
@@ -29,6 +30,7 @@ describe("Add handlers to a route:", function() {
 describe("Implement Route Handlers Invokation:",function() {
   var app, route;
   beforeEach(function() {
+    makeRoute = require("../lib/route");
     app = express();
     route = makeRoute();
     app.use(route);
@@ -131,6 +133,7 @@ describe("Implement Verbs For Route",function() {
   }
 
   beforeEach(function() {
+    makeRoute = require("../lib/route");
     app = express();
     route = makeRoute();
     app.use(route);
