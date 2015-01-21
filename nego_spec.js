@@ -34,7 +34,7 @@ describe("Setting Content-Type",function() {
   });
 });
 
-describe("req.format",function() {
+describe("res.format",function() {
   var app;
   beforeEach(function() {
     app = express();
