@@ -104,7 +104,7 @@ describe("Implement calling the middlewares",function() {
 describe("Implement Error Handling",function() {
   var app;
   beforeEach(function() {
-    app = new express();
+    app = express();
   });
 
   it("should return 500 for unhandled error", function(done) {
@@ -165,8 +165,8 @@ describe("Implement Error Handling",function() {
 describe("Implement App Embedding As Middleware",function() {
   var app, subApp;
   beforeEach(function() {
-    app = new express();
-    subApp = new express();
+    app = express();
+    subApp = express();
   })
 
   it("should pass unhandled request to parent",function(done) {
@@ -181,8 +181,8 @@ describe("Implement App Embedding As Middleware",function() {
   });
 
   it("should pass unhandled error to parent",function(done) {
-    app = new express();
-    subApp = new express();
+    app = express();
+    subApp = express();
 
     function m1(req,res,next) {
       next("m1 error");
@@ -422,4 +422,3 @@ describe("Prefix path trimming",function() {
     });
   });
 });
-
