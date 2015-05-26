@@ -107,7 +107,7 @@ describe("HTTP redirect:",function() {
 
   it("returns empty body",function(done) {
     request(app).get("/foo")
-      .expect("")
+      .expect(302, "")
       .expect("Content-Length",0).end(done);
   });
 });
